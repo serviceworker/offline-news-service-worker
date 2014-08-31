@@ -1,0 +1,34 @@
+{
+  "name": "offline-news",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run jshint && npm run lintspaces",
+    "jshint": "jshint `npm run js-files | tail -n +5`",
+    "lintspaces": "lintspaces -n -t -d spaces -i js-comments -s 2 `npm run js-files | tail -n +5`",
+    "js-files": "find . -name '*.js' ! -path './node_modules/*' ! -name 'superagent.js' ! -name 'promise.js' ! -name 'indexeddb.shim.min.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/matthew-andrews/offline-news.git"
+  },
+  "author": "Matt Andrews <matt@mattandre.ws>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matthew-andrews/offline-news/issues"
+  },
+  "homepage": "https://github.com/matthew-andrews/offline-news",
+  "private": true,
+  "dependencies": {
+    "express": "^4.8.7",
+    "superagent": "^0.18.2"
+  },
+  "devDependencies": {
+    "jshint": "^2.5.5",
+    "lintspaces-cli": "0.0.4"
+  },
+  "engines": {
+    "node": "0.10.x"
+  }
+}
