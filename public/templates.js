@@ -8,7 +8,7 @@
     data = data || [];
     var ul = '';
     data.forEach(function(story) {
-      ul += '<li><a class="js-link" href="/'+story.guid+'">'+story.title+'</a></li>';
+      ul += '<li><a class="js-link" href="/article/'+story.guid+'">'+story.title+'</a></li>';
     });
     return '<h1>FT Tech Blog</h1><ul>'+ul+'</ul>';
   }

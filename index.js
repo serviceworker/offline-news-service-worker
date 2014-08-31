@@ -7,8 +7,8 @@ var templates = require('./public/templates');
 var app = express();
 app.use(express.static(__dirname+'/public'));
 
-app.get('/tech-blog', function(req, res) {
-  request.get(api+req.originalUrl)
+app.get('/article/:guid', function(req, res) {
+  request.get(api+'/'+req.params.guid)
     .end(function(err, data) {
       if (err || !data.ok) {
         res.status(404);
@@ -49,16 +49,16 @@ function layoutShell(data) {
     main: data && data.main || ''
   };
   return '<!DOCTYPE html>'
-    + '<html>'
-    + '  <head>'
-    + '    <title>'+data.title+'</title>'
-    + '    <link rel="stylesheet" href="/styles.css" type="text/css" media="all" />'
-    + '  </head>'
-    + '  <body>'
-    + '    <div class="brandrews"><a href="https://mattandre.ws">mattandre.ws</a> | <a href="https://twitter.com/andrewsmatt">@andrewsmatt</a></div>'
-    + '    <main>'+data.main+'</main>'
-    + '    <script src="/superagent.js"></script>'
-    + '    <script src="/templates.js"></script>'
-    + '  </body>'
-    + '</html>';
+    + '\n<html>'
+    + '\n  <head>'
+    + '\n    <title>'+data.title+'</title>'
+    + '\n    <link rel="stylesheet" href="/styles.css" type="text/css" media="all" />'
+    + '\n  </head>'
+    + '\n  <body>'
+    + '\n    <div class="brandrews"><a href="https://mattandre.ws">mattandre.ws</a> | <a href="https://twitter.com/andrewsmatt">@andrewsmatt</a></div>'
+    + '\n    <main>'+data.main+'</main>'
+    + '\n    <script src="/superagent.js"></script>'
+    + '\n    <script src="/templates.js"></script>'
+    + '\n  </body>'
+    + '\n</html>';
 }
