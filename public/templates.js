@@ -4,7 +4,7 @@
     article: article
   };
 
-  function list(stories) {
+  function list(data) {
     data = data || [];
     var ul = '';
     data.forEach(function(story) {
