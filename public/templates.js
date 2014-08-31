@@ -5,9 +5,9 @@
   };
 
   function list(data) {
-    data = data || [];
+    var stories = data.stories || [];
     var ul = '';
-    data.forEach(function(story) {
+    stories.forEach(function(story) {
       ul += '<li><a class="js-link" href="/article/'+story.guid+'">'+story.title+'</a></li>';
     });
     return shell({
@@ -36,7 +36,6 @@
       + '\n  <body>'
       + '\n    <div class="brandrews"><a href="https://mattandre.ws">mattandre.ws</a> | <a href="https://twitter.com/andrewsmatt">@andrewsmatt</a></div>'
       + '\n    <main>'+data.main+'</main>'
-      + '\n    <script src="/superagent.js"></script>'
       + '\n    <script src="/templates.js"></script>'
       + '\n  </body>'
       + '\n</html>';
