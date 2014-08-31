@@ -4,17 +4,42 @@
     article: article
   };
 
-  function list(data) {
+  function list(stories) {
     data = data || [];
     var ul = '';
     data.forEach(function(story) {
       ul += '<li><a class="js-link" href="/article/'+story.guid+'">'+story.title+'</a></li>';
     });
-    return '<h1>FT Tech Blog</h1><ul>'+ul+'</ul>';
+    return shell({
+      main: '<h1>FT Tech Blog</h1><ul>'+ul+'</ul>'
+    });
   }
 
   function article(data) {
-    return '<nav><a class="js-link" href="/">&raquo; Back to FT Tech Blog</a></nav><h1>'+data.title+'</h1>'+data.body;
+    return shell({
+      title: data.title,
+      main: '<nav><a class="js-link" href="/">&raquo; Back to FT Tech Blog</a></nav><h1>'+data.title+'</h1>'+data.body
+    });
+  }
+
+  function shell(data) {
+    data = {
+      title: data && data.title || 'FT Tech News',
+      main: data && data.main || ''
+    };
+    return '<!DOCTYPE html>'
+      + '\n<html>'
+      + '\n  <head>'
+      + '\n    <title>'+data.title+'</title>'
+      + '\n    <link rel="stylesheet" href="/styles.css" type="text/css" media="all" />'
+      + '\n  </head>'
+      + '\n  <body>'
+      + '\n    <div class="brandrews"><a href="https://mattandre.ws">mattandre.ws</a> | <a href="https://twitter.com/andrewsmatt">@andrewsmatt</a></div>'
+      + '\n    <main>'+data.main+'</main>'
+      + '\n    <script src="/superagent.js"></script>'
+      + '\n    <script src="/templates.js"></script>'
+      + '\n  </body>'
+      + '\n</html>';
   }
 
   if (typeof module == 'object') {
