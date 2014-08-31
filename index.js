@@ -20,6 +20,7 @@ app.get('/tech-blog', function(req, res) {
         }));
       } else {
         res.send(layoutShell({
+          title: data.title,
           main: templates.article(data.body)
         }));
       }
