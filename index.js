@@ -5,7 +5,6 @@ var request = require('superagent');
 var templates = require('./public/templates');
 
 var app = express();
-app.use(cookieParser());
 app.use(express.static(__dirname+'/public'));
 
 app.get('/tech-blog', function(req, res) {
