@@ -10,6 +10,7 @@ app.use(express.static(__dirname+'/public'));
 app.get('/article/:guid', function(req, res) {
   request.get(api+'/'+req.params.guid)
     .end(function(err, data) {
+      var article = data.body;
       if (err || !data.ok) {
         res.status(404);
         res.send(templates.article({
@@ -18,8 +19,8 @@ app.get('/article/:guid', function(req, res) {
         }));
       } else {
         res.send(templates.article({
-          title: data.title,
-          body: data.body
+          title: article.title,
+          body: article.body
         }));
       }
     });
