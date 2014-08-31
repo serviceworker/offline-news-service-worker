@@ -19,7 +19,7 @@ app.get('/article/:guid', function(req, res) {
       } else {
         res.send(templates.article({
           title: data.title,
-          body: templates.article(data.body)
+          body: data.body
         }));
       }
     });
