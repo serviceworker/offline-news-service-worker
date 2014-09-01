@@ -1,13 +1,16 @@
 this.oninstall = function(e) {
-  // Would be nice to use new Cache(); here but that isn't ready yet
-  // https://jakearchibald.github.io/isserviceworkerready/
+  var resources = caches.set('resources', new Cache(
+    '/styles.css',
+    '/templates.js',
+    '/application.js'
+  ));
 
-  // TODO: Do something instead with IndexedDB
-
+  e.waitUntil(resources.ready());
 };
- 
+
 this.onfetch = function(e) {
-
-  // TODO: Deal with network requests, probably with IndexedDB
-
+  event.respondWith(caches.match('resources', e.request.url)
+    .catch(function() {
+      return fetch(event.request);
+    }));
 };
