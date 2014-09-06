@@ -58,6 +58,12 @@ function synchronizeContent() {
     });
 }
 
+function arrayContains(array, story) {
+  return array.some(function(arrayStory) {
+    return arrayStory.guid === story.guid;
+  });
+}
+
 function updateApplication() {
   var precachePaths = [
     '/styles.css',
@@ -66,9 +72,14 @@ function updateApplication() {
   ];
 
   Promise.all(precachePaths.map(function(path) {
-    return fetch(path).then(function(res) {
-      return { path: path, body: res.body.asText() };
-    });
+    return fetch(path)
+      .then(function(res) {
+        if (res.status !== 200) throw new Error('Cannot download resource '+path);
+        return res.body.asText();
+      })
+      .then(function(body) {
+        return { path: path, body: body };
+      });
   }))
     .then(function(results) {
       return Promise.all(results.map(function(result) {
