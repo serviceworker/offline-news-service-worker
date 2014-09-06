@@ -1,8 +1,11 @@
 var db;
 
 this.oninstall = function(e) {
-  e.waitUntil(openDatabase()
-    .then(Promise.all([synchronizeContent, updateApplication])));
+  e.waitUntil(openDatabase().then(function() {
+      return Promise.all([
+        synchronizeContent(), updateApplication()
+      ]);
+    });
 };
 
 this.onfetch = function(e) {
