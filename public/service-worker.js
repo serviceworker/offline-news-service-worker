@@ -8,7 +8,10 @@ this.oninstall = function(e) {
   e.waitUntil(openDatabase().then(function() {
     return Promise.all([
         synchronizeContent(), updateApplication()
-      ]);
+      ])
+      .then(function() {
+        setInterval(synchronizeContent, 3*60*1000);
+      });
   }));
 };
 
