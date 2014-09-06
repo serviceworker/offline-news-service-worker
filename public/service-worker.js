@@ -1,4 +1,6 @@
 importScripts('./templates.js');
+
+var api = 'https://offline-news-api.herokuapp.com/stories'
 var db;
 var templates = this.templates;
 
@@ -11,10 +13,10 @@ this.oninstall = function(e) {
 };
 
 this.onfetch = function(e) {
-  var originRegExp = new RegExp('^'+location.origin);
-  var path = e.request.url.replace(originRegExp, '');
-  var promise;
+  var path = e.request.url.replace(location.origin, '');
   var guidMatches = path.match(/^\/article\/([0-9]+)\/?$/);
+  var promise;
+
   if (path === '/') {
     promise = databaseGet('stories')
       .then(function(stories) {
@@ -29,9 +31,7 @@ this.onfetch = function(e) {
   } else {
     promise = databaseGetById('cache', path)
       .then(function(item) {
-        return new Response(new Blob([item.body], { type : 'text/html' }), {
-          headers: { "Content-Type": item.contentType }
-        });
+        return new Response(new Blob([item.body], { type : item.contentType }), { headers: { "Content-Type": item.contentType } });
       })
       .catch(function() {
         return fetch(url);
@@ -61,7 +61,7 @@ function openDatabase() {
 function synchronizeContent() {
   return Promise.all([
       databaseGet('stories'),
-      fetch('https://offline-news-api.herokuapp.com/stories').then(function(res) { return res.body.asJSON(); })
+      fetch(api).then(function(res) { return res.body.asJSON(); })
     ])
     .then(function(results) {
       var promises = [];
