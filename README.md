@@ -2,7 +2,12 @@
 
 https://offline-news-service-worker.herokuapp.com
 
-### Prerequisites
+Note: you must enable Service Worker in your favourite browser first:-
+
+- [Instructions for Chrome](http://serviceworker.io/service-worker-in-chrome-canary.html)
+- [Instructions for Firefox](http://serviceworker.io/service-worker-in-firefox-nightly.html)
+
+### Prerequisites for runing locally
 
 UNIX-like computer running node (would happily accept pull requests to fix it for Windows but I don't have the means to test that here).
 
