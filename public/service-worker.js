@@ -6,10 +6,7 @@ this.oninstall = function(e) {
 };
 
 this.onfetch = function(e) {
-  event.respondWith(caches.match('resources', e.request.url)
-    .catch(function() {
-      return fetch(event.request);
-    }));
+  e.respondWith(fetch(e.request));
 };
 
 function openDatabase() {
