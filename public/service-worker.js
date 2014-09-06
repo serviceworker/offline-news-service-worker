@@ -31,7 +31,7 @@ function openDatabase() {
 }
 
 function synchronizeContent() {
-  Promise.all([
+  return Promise.all([
       databaseGet('stories'),
       fetch('https://offline-news-api.herokuapp.com/stories').then(function(res) { return res.body.asJSON(); })
     ])
@@ -43,6 +43,7 @@ function synchronizeContent() {
       // Add new stories downloaded from server to the database
       promises = promises.concat(remoteStories.map(function(story) {
         if (!arrayContainsStory(localStories, story)) {
+          console.log('trying to add story', story);
           return databasePut('stories', story);
         }
       }));
@@ -58,7 +59,7 @@ function synchronizeContent() {
     });
 }
 
-function arrayContains(array, story) {
+function arrayContainsStory(array, story) {
   return array.some(function(arrayStory) {
     return arrayStory.guid === story.guid;
   });
