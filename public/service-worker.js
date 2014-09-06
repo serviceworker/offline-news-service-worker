@@ -2,10 +2,10 @@ var db;
 
 this.oninstall = function(e) {
   e.waitUntil(openDatabase().then(function() {
-      return Promise.all([
+    return Promise.all([
         synchronizeContent(), updateApplication()
       ]);
-    }));
+  }));
 };
 
 this.onfetch = function(e) {
@@ -31,9 +31,10 @@ function openDatabase() {
 }
 
 function synchronizeContent() {
-  Promise.all([databaseGet('stories'),
-    fetch('https://offline-news-api.herokuapp.com/stories')
-      .then(function(res) { return res.body.asJSON(); })])
+  Promise.all([
+      databaseGet('stories'),
+      fetch('https://offline-news-api.herokuapp.com/stories').then(function(res) { return res.body.asJSON(); })
+    ])
     .then(function(results) {
       var promises = [];
       var localStories = results[0];
