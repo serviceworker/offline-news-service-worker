@@ -31,7 +31,7 @@ function openDatabase() {
 }
 
 function synchronizeContent() {
-  Promise.all([databaseStoriesGet(),
+  Promise.all([databaseGet('stories'),
     fetch('https://offline-news-api.herokuapp.com/stories')
       .then(function(res) { return res.body.asJSON(); })])
     .then(function(results) {
@@ -67,12 +67,47 @@ function updateApplication() {
   // todo add logic to download+store those files in IndexedDB
 }
 
-function databasePut(store, item) {
+function databasePut(type, item) {
   return new Promise(function(resolve, reject) {
-    var transaction = db.transaction([store], 'readwrite');
-    var store = transaction.objectStore(store);
+    var transaction = db.transaction([type], 'readwrite');
+    var store = transaction.objectStore(type);
     var request = store.put(item);
     request.onsuccess = resolve;
     request.onerror = reject;
+  });
+}
+
+function databaseDelete(type, id) {
+  return new Promise(function(resolve, reject) {
+    var transaction = db.transaction([type], 'readwrite');
+    var store = transaction.objectStore(type);
+    var request = store.delete(id);
+    request.onsuccess = resolve;
+    request.onerror = reject;
+  });
+}
+
+function databaseGet(type) {
+  return new Promise(function(resolve, reject) {
+    var transaction = db.transaction([type], 'readonly');
+    var store = transaction.objectStore(type);
+
+    var keyRange = IDBKeyRange.lowerBound(0);
+
+    // Using reverse direction because the index being sorted on
+    // ends with a numerical incrementing ID so to get newest news
+    // first you need to sort by largest first.
+    var cursorRequest = store.openCursor(keyRange, 'prev');
+
+    var data = [];
+    cursorRequest.onsuccess = function(e) {
+      var result = e.target.result;
+      if (result) {
+        data.push(result.value);
+        result.continue();
+      } else {
+        resolve(data);
+      }
+    };
   });
 }
