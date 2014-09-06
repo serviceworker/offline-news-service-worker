@@ -1,6 +1,6 @@
 importScripts('./templates.js');
 
-var api = 'https://offline-news-api.herokuapp.com/stories'
+var api = 'https://offline-news-api.herokuapp.com/stories';
 var db;
 var templates = this.templates;
 
