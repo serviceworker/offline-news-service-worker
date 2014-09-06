@@ -1,4 +1,6 @@
+importScripts('./templates.js');
 var db;
+var templates = this.templates;
 
 this.oninstall = function(e) {
   e.waitUntil(openDatabase().then(function() {
@@ -9,7 +11,38 @@ this.oninstall = function(e) {
 };
 
 this.onfetch = function(e) {
-  e.respondWith(fetch(e.request));
+  var promise;
+  var url = e.request.url;
+  var guidMatches = url.match(/\/article\/([0-9]+)\/?$/);
+  var cacheMatches = url.match(/\/([a-z]+.(?:js|css))/);
+  if (cacheMatches) {
+    promise = databaseGetById('cache', cacheMatches[1])
+      .then(function(cache) {
+        return new Promise(function(resolve) {
+          resolve(JSON.stringify(cache.body));
+        });
+      })
+      .then(function(body) {
+        return new Response(new Blob([body], { type : 'text/html' }), {
+          headers: { "Content-Type": "text/html" }
+        });
+      });
+  } else if (guidMatches) {
+    promise = databaseGetById('stories', guidMatches[1])
+      .then(function(story) {
+        return new Promise(function(resolve) {
+          resolve(templates.article(story));
+        });
+      })
+      .then(function(body) {
+        return new Response(new Blob([body], { type : 'text/html' }), {
+          headers: { "Content-Type": "text/html" }
+        });
+      });
+  } else {
+    promise = fetch(url);
+  }
+  e.respondWith(promise);
 };
 
 function openDatabase() {
@@ -131,5 +164,18 @@ function databaseGet(type) {
         resolve(data);
       }
     };
+  });
+}
+
+function databaseGetById(type, id) {
+  return new Promise(function(resolve, reject) {
+    var transaction = db.transaction([type], 'readonly');
+    var store = transaction.objectStore(type);
+    var request = store.get(id);
+    request.onsuccess = function(e) {
+      var result = e.target.result;
+      resolve(result);
+    };
+    request.onerror = reject;
   });
 }
