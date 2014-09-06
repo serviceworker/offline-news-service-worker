@@ -2,10 +2,10 @@
 
 https://offline-news-service-worker.herokuapp.com
 
-Note: you must enable Service Worker in your favourite browser first:-
+Warnings:-
 
-- [Instructions for Chrome](http://serviceworker.io/service-worker-in-chrome-canary.html)
-- [Instructions for Firefox](http://serviceworker.io/service-worker-in-firefox-nightly.html)
+- You must enable Service Worker first - [instructions for Chrome](http://serviceworker.io/service-worker-in-chrome-canary.html)
+- I've only tested this in [Google Chrome Canary](https://www.google.co.uk/intl/en/chrome/browser/canary.html)
 
 ### Prerequisites for runing locally
 
