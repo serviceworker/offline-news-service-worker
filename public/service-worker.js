@@ -5,9 +5,6 @@ this.oninstall = function(e) {
     return Promise.all([
         synchronizeContent(), updateApplication()
       ]);
-
-    // Check for new content every 3 minutes
-    setInterval(synchronizeContent, 3*60*1000);
   }));
 };
 
