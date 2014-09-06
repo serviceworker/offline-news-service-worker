@@ -5,9 +5,8 @@
   };
 
   function list(data) {
-    var stories = data.stories || [];
     var ul = '';
-    stories.forEach(function(story) {
+    data.forEach(function(story) {
       ul += '<li><a class="js-link" href="/article/'+story.guid+'">'+story.title+'</a></li>';
     });
     return shell({

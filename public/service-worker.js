@@ -11,36 +11,31 @@ this.oninstall = function(e) {
 };
 
 this.onfetch = function(e) {
+  var originRegExp = new RegExp('^'+location.origin);
+  var path = e.request.url.replace(originRegExp, '');
   var promise;
-  var url = e.request.url;
-  var guidMatches = url.match(/\/article\/([0-9]+)\/?$/);
-  var cacheMatches = url.match(/\/([a-z]+.(?:js|css))/);
-  if (cacheMatches) {
-    promise = databaseGetById('cache', cacheMatches[1])
-      .then(function(cache) {
-        return new Promise(function(resolve) {
-          resolve(JSON.stringify(cache.body));
-        });
-      })
-      .then(function(body) {
-        return new Response(new Blob([body], { type : 'text/html' }), {
-          headers: { "Content-Type": "text/html" }
-        });
+  var guidMatches = path.match(/^\/article\/([0-9]+)\/?$/);
+  if (path === '/') {
+    promise = databaseGet('stories')
+      .then(function(stories) {
+        return new Response(new Blob([templates.list(stories)], { type : 'text/html' }), { headers: { "Content-Type": "text/html" } });
       });
   } else if (guidMatches) {
     promise = databaseGetById('stories', guidMatches[1])
       .then(function(story) {
-        return new Promise(function(resolve) {
-          resolve(templates.article(story));
-        });
-      })
-      .then(function(body) {
-        return new Response(new Blob([body], { type : 'text/html' }), {
-          headers: { "Content-Type": "text/html" }
-        });
+        var body = templates.article(story);
+        return new Response(new Blob([body], { type : 'text/html' }), { headers: { "Content-Type": "text/html" } });
       });
   } else {
-    promise = fetch(url);
+    promise = databaseGetById('cache', path)
+      .then(function(item) {
+        return new Response(new Blob([item.body], { type : 'text/html' }), {
+          headers: { "Content-Type": item.contentType }
+        });
+      })
+      .catch(function() {
+        return fetch(url);
+      });
   }
   e.respondWith(promise);
 };
@@ -76,7 +71,6 @@ function synchronizeContent() {
       // Add new stories downloaded from server to the database
       promises = promises.concat(remoteStories.map(function(story) {
         if (!arrayContainsStory(localStories, story)) {
-          console.log('trying to add story', story);
           return databasePut('stories', story);
         }
       }));
@@ -109,10 +103,10 @@ function updateApplication() {
     return fetch(path)
       .then(function(res) {
         if (res.status !== 200) throw new Error('Cannot download resource '+path);
-        return res.body.asText();
+        return Promise.all([res.body.asText(), res.headers.get('Content-Type')]);
       })
-      .then(function(body) {
-        return { path: path, body: body };
+      .then(function(results) {
+        return { path: path, body: results[0], contentType: results[1] };
       });
   }))
     .then(function(results) {

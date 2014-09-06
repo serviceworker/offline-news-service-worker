@@ -32,9 +32,7 @@ app.get('/', function(req, res) {
       if (err) {
         res.status(404).end();
       } else {
-        res.send(templates.list({
-          stories: data.body
-        }));
+        res.send(templates.list(data.body));
       }
     });
 });
