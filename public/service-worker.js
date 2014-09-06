@@ -5,7 +5,7 @@ this.oninstall = function(e) {
       return Promise.all([
         synchronizeContent(), updateApplication()
       ]);
-    });
+    }));
 };
 
 this.onfetch = function(e) {
