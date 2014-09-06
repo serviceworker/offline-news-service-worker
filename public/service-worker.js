@@ -58,13 +58,22 @@ function synchronizeContent() {
 }
 
 function updateApplication() {
-  var precacheUrls = [
+  var precachePaths = [
     '/styles.css',
     '/templates.js',
     '/application.js'
   ];
 
-  // todo add logic to download+store those files in IndexedDB
+  Promise.all(precachePaths.map(function(path) {
+    return fetch(path).then(function(res) {
+      return { path: path, body: res.body.asText() };
+    });
+  }))
+    .then(function(results) {
+      return Promise.all(results.map(function(result) {
+        return databasePut('cache', result);
+      }));
+    });
 }
 
 function databasePut(type, item) {
