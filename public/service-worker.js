@@ -47,7 +47,7 @@ this.onfetch = function(e) {
 function openDatabase() {
   return new Promise(function(resolve, reject) {
     var version = 1;
-    var request = indexedDB.open('news', version);
+    var request = indexedDB.open('offline-news-service-worker', version);
     request.onupgradeneeded = function(e) {
       db = e.target.result;
       e.target.transaction.onerror = reject;
