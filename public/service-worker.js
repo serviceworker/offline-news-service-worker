@@ -125,7 +125,7 @@ function databasePut(type, item) {
     var transaction = db.transaction([type], 'readwrite');
     var store = transaction.objectStore(type);
     var request = store.put(item);
-    request.onsuccess = resolve;
+    transaction.oncomplete = resolve;
     request.onerror = reject;
   });
 }
@@ -135,7 +135,7 @@ function databaseDelete(type, id) {
     var transaction = db.transaction([type], 'readwrite');
     var store = transaction.objectStore(type);
     var request = store.delete(id);
-    request.onsuccess = resolve;
+    transaction.oncomplete = resolve;
     request.onerror = reject;
   });
 }
