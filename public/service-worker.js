@@ -16,7 +16,7 @@ this.oninstall = function(e) {
 };
 
 this.onfetch = function(e) {
-  var url = e.reques.url;
+  var url = e.request.url;
   var path = url.replace(location.origin, '');
   var guidMatches = path.match(/^\/article\/([0-9]+)\/?$/);
   var promise;
