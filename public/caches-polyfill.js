@@ -1,75 +1,104 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.caches=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var cacheDB = require('./cachedb');
+(function() {
 
-function castToRequest(request) {
-  if (!(request instanceof Request)) {
-    request = new Request(request);
-  }
-  return request;
+function IDBHelper(name, version, upgradeCallback) {
+  var request = indexedDB.open(name, version);
+  this.ready = IDBHelper.promisify(request);
+  request.onupgradeneeded = function(event) {
+    upgradeCallback(request.result, event.oldVersion);
+  };
 }
 
-function Cache() {
-  this._name = '';
-  this._origin = '';
-}
+IDBHelper.supported = 'indexedDB' in self;
 
-var CacheProto = Cache.prototype;
-
-CacheProto.match = function(request, params) {
-  return cacheDB.match(this._origin, this._name, request, params);
+IDBHelper.promisify = function(obj) {
+  return new Promise(function(resolve, reject) {
+    IDBHelper.callbackify(obj, resolve, reject);
+  });
 };
 
-CacheProto.matchAll = function(request, params) {
-  return cacheDB.matchAll(this._origin, this._name, request, params);
+IDBHelper.callbackify = function(obj, doneCallback, errCallback) {
+  function onsuccess(event) {
+    if (doneCallback) {
+      doneCallback(obj.result);
+    }
+    unlisten();
+  }
+  function onerror(event) {
+    if (errCallback) {
+      errCallback(obj.error);
+    }
+    unlisten();
+  }
+  function unlisten() {
+    obj.removeEventListener('complete', onsuccess);
+    obj.removeEventListener('success', onsuccess);
+    obj.removeEventListener('error', onerror);
+    obj.removeEventListener('abort', onerror);
+  }
+  obj.addEventListener('complete', onsuccess);
+  obj.addEventListener('success', onsuccess);
+  obj.addEventListener('error', onerror);
+  obj.addEventListener('abort', onerror);
 };
 
-CacheProto.addAll = function(requests) {
-  requests = requests.map(castToRequest);
+IDBHelper.iterate = function(cursorRequest, eachCallback, doneCallback, errorCallback) {
+  var oldCursorContinue;
 
-  Promise.all(
-    requests.map(function(request) {
-      return fetch(request);
-    })
-  ).then(function(responses) {
-    return cacheDB.put(this._origin, this._name, responses.map(function(response, i) {
-      return [requests[i], response];
-    }));
-  }.bind(this));
-};
-
-CacheProto.add = function(request) {
-  return this.addAll([request]);
-};
-
-CacheProto.put = function(request, response) {
-  request = castToRequest(request);
-
-  if (!(response instanceof Response)) {
-    throw TypeError("Incorrect response type");
+  function cursorContinue() {
+    this._continuing = true;
+    return oldCursorContinue.call(this);
   }
 
-  return cacheDB.put(this._origin, this._name, [[request, response]]);
+  cursorRequest.onsuccess = function() {
+    var cursor = cursorRequest.result;
+
+    if (!cursor) {
+      if (doneCallback) {
+        doneCallback();
+      }
+      return;
+    }
+
+    if (cursor.continue != cursorContinue) {
+      oldCursorContinue = cursor.continue;
+      cursor.continue = cursorContinue;
+    }
+
+    eachCallback(cursor);
+
+    if (!cursor._continuing) {
+      if (doneCallback) {
+        doneCallback();
+      }
+    }
+  };
+
+  cursorRequest.onerror = function() {
+    if (errorCallback) {
+      errorCallback(cursorRequest.error);
+    }
+  };
 };
 
-CacheProto.delete = function(request, params) {
-  request = castToRequest(request);
-  return cacheDB.delete(this._origin, this._name, request, params);
+var IDBHelperProto = IDBHelper.prototype;
+
+IDBHelperProto.transaction = function(stores, callback, opts) {
+  opts = opts || {};
+
+  return this.ready.then(function(db) {
+    var mode = opts.mode || 'readonly';
+
+    var tx = db.transaction(stores, mode);
+    callback(tx, db);
+    return IDBHelper.promisify(tx);
+  });
 };
 
-CacheProto.keys = function(request, params) {
-  if (request) {
-    request = castToRequest(request);
-    return cacheDB.matchAllRequests(this._origin, this._name, request, params);
-  }
-  else {
-    return cacheDB.allRequests(this._origin, this._name);
-  }
-};
+self.IDBHelper = IDBHelper;
 
-module.exports = Cache;
+})();
 
-},{"./cachedb":2}],2:[function(require,module,exports){
-var IDBHelper = require('./idbhelper');
+(function() {
 
 function matchesVary(request, entryRequest, entryResponse) {
   if (!entryResponse.headers.vary) {
@@ -466,10 +495,13 @@ CacheDBProto.put = function(origin, cacheName, items) {
   });
 };
 
-module.exports = new CacheDB();
-},{"./idbhelper":4}],3:[function(require,module,exports){
-var cacheDB = require('./cachedb');
-var Cache = require('./cache');
+self.cacheDB = new CacheDB();
+
+})();
+
+(function() {
+
+var cacheDB = self.cacheDB;
 
 function CacheStorage() {
   this._origin = location.origin;
@@ -491,7 +523,7 @@ CacheStorageProto.match = function(request, params) {
 CacheStorageProto.get = function(name) {
   return this.has(name).then(function(hasCache) {
     var cache;
-    
+
     if (hasCache) {
       return this._vendCache(name);
     }
@@ -521,103 +553,82 @@ CacheStorageProto.keys = function() {
   return cacheDB.cacheNames(this._origin);
 };
 
-module.exports = new CacheStorage();
+self.CacheStorage = CacheStorage;
 
-},{"./cache":1,"./cachedb":2}],4:[function(require,module,exports){
-function IDBHelper(name, version, upgradeCallback) {
-  var request = indexedDB.open(name, version);
-  this.ready = IDBHelper.promisify(request);
-  request.onupgradeneeded = function(event) {
-    upgradeCallback(request.result, event.oldVersion);
-  };
+// FIXME: Recent Blink self.caches isn't amenable to being overwritten.
+self.polyfillCaches = new CacheStorage();
+
+})();
+
+(function() {
+
+var cacheDB = self.cacheDB;
+
+function castToRequest(request) {
+  if (!(request instanceof Request)) {
+    request = new Request(request);
+  }
+  return request;
 }
 
-IDBHelper.supported = 'indexedDB' in self;
+function Cache() {
+  this._name = '';
+  this._origin = '';
+}
 
-IDBHelper.promisify = function(obj) {
-  return new Promise(function(resolve, reject) {
-    IDBHelper.callbackify(obj, resolve, reject);
-  });
+var CacheProto = Cache.prototype;
+
+CacheProto.match = function(request, params) {
+  return cacheDB.match(this._origin, this._name, request, params);
 };
 
-IDBHelper.callbackify = function(obj, doneCallback, errCallback) {
-  function onsuccess(event) {
-    if (doneCallback) {
-      doneCallback(obj.result);
-    }
-    unlisten();
-  }
-  function onerror(event) {
-    if (errCallback) {
-      errCallback(obj.error);
-    }
-    unlisten();
-  }
-  function unlisten() {
-    obj.removeEventListener('complete', onsuccess);
-    obj.removeEventListener('success', onsuccess);
-    obj.removeEventListener('error', onerror);
-    obj.removeEventListener('abort', onerror);
-  }
-  obj.addEventListener('complete', onsuccess);
-  obj.addEventListener('success', onsuccess);
-  obj.addEventListener('error', onerror);
-  obj.addEventListener('abort', onerror);
+CacheProto.matchAll = function(request, params) {
+  return cacheDB.matchAll(this._origin, this._name, request, params);
 };
 
-IDBHelper.iterate = function(cursorRequest, eachCallback, doneCallback, errorCallback) {
-  var oldCursorContinue;
+CacheProto.addAll = function(requests) {
+  requests = requests.map(castToRequest);
 
-  function cursorContinue() {
-    this._continuing = true;
-    return oldCursorContinue.call(this);
+  Promise.all(
+    requests.map(function(request) {
+      return fetch(request);
+    })
+  ).then(function(responses) {
+    return cacheDB.put(this._origin, this._name, responses.map(function(response, i) {
+      return [requests[i], response];
+    }));
+  }.bind(this));
+};
+
+CacheProto.add = function(request) {
+  return this.addAll([request]);
+};
+
+CacheProto.put = function(request, response) {
+  request = castToRequest(request);
+
+  if (!(response instanceof Response)) {
+    throw TypeError("Incorrect response type");
   }
 
-  cursorRequest.onsuccess = function() {
-    var cursor = cursorRequest.result;
-
-    if (!cursor) {
-      if (doneCallback) {
-        doneCallback();
-      }
-      return;
-    }
-
-    if (cursor.continue != cursorContinue) {
-      oldCursorContinue = cursor.continue;
-      cursor.continue = cursorContinue;
-    }
-
-    eachCallback(cursor);
-
-    if (!cursor._continuing) {
-      if (doneCallback) {
-        doneCallback();
-      }
-    }
-  };
-
-  cursorRequest.onerror = function() {
-    if (errorCallback) {
-      errorCallback(cursorRequest.error);
-    }
-  };
+  return cacheDB.put(this._origin, this._name, [[request, response]]);
 };
 
-var IDBHelperProto = IDBHelper.prototype;
-
-IDBHelperProto.transaction = function(stores, callback, opts) {
-  opts = opts || {};
-
-  return this.ready.then(function(db) {
-    var mode = opts.mode || 'readonly';
-
-    var tx = db.transaction(stores, mode);
-    callback(tx, db);
-    return IDBHelper.promisify(tx);
-  });
+CacheProto.delete = function(request, params) {
+  request = castToRequest(request);
+  return cacheDB.delete(this._origin, this._name, request, params);
 };
 
-module.exports = IDBHelper;
-},{}]},{},[3])(3)
-});
+CacheProto.keys = function(request, params) {
+  if (request) {
+    request = castToRequest(request);
+    return cacheDB.matchAllRequests(this._origin, this._name, request, params);
+  }
+  else {
+    return cacheDB.allRequests(this._origin, this._name);
+  }
+};
+
+self.Cache = Cache;
+
+})();

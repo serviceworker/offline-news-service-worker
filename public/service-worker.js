@@ -34,7 +34,7 @@ this.onfetch = function(e) {
         return new Response(new Blob([body], { type : 'text/html' }), { headers: { "Content-Type": "text/html" } });
       });
   } else {
-    promise = caches.match(e.request);
+    promise = polyfillCaches.match(e.request);
   }
   e.respondWith(promise);
 };
@@ -91,8 +91,8 @@ function arrayContainsStory(array, story) {
 }
 
 function updateApplication() {
-  return caches.get('news-static-cache').then(function(cache) {
-    return cache || caches.create('news-static-cache');
+  return polyfillCaches.get('news-static-cache').then(function(cache) {
+    return cache || polyfillCaches.create('news-static-cache');
   }).then(function(cache) {
     return cache.addAll([
     '/styles.css',
