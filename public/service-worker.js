@@ -1,4 +1,5 @@
 importScripts('./templates.js');
+importScripts('./caches-polyfill.js');
 
 var api = 'https://offline-news-api.herokuapp.com/stories';
 var db;
@@ -33,26 +34,19 @@ this.onfetch = function(e) {
         return new Response(new Blob([body], { type : 'text/html' }), { headers: { "Content-Type": "text/html" } });
       });
   } else {
-    promise = databaseGetById('cache', path)
-      .then(function(item) {
-        return new Response(new Blob([item.body], { type : item.contentType }), { headers: { "Content-Type": item.contentType } });
-      })
-      .catch(function() {
-        return fetch(url);
-      });
+    promise = polyfillCaches.match(e.request);
   }
   e.respondWith(promise);
 };
 
 function openDatabase() {
   return new Promise(function(resolve, reject) {
-    var version = 1;
+    var version = 2;
     var request = indexedDB.open('offline-news-service-worker', version);
     request.onupgradeneeded = function(e) {
       db = e.target.result;
       e.target.transaction.onerror = reject;
       db.createObjectStore('stories', { keyPath: 'guid' });
-      db.createObjectStore('cache', { keyPath: 'path' });
     };
     request.onsuccess = function(e) {
       db = e.target.result;
@@ -97,27 +91,15 @@ function arrayContainsStory(array, story) {
 }
 
 function updateApplication() {
-  var precachePaths = [
+  return polyfillCaches.get('news-static-cache').then(function(cache) {
+    return cache || polyfillCaches.create('news-static-cache');
+  }).then(function(cache) {
+    return cache.addAll([
     '/styles.css',
     '/templates.js',
     '/application.js'
-  ];
-
-  Promise.all(precachePaths.map(function(path) {
-    return fetch(path)
-      .then(function(res) {
-        if (res.status !== 200) throw new Error('Cannot download resource '+path);
-        return Promise.all([res.body.asText(), res.headers.get('Content-Type')]);
-      })
-      .then(function(results) {
-        return { path: path, body: results[0], contentType: results[1] };
-      });
-  }))
-    .then(function(results) {
-      return Promise.all(results.map(function(result) {
-        return databasePut('cache', result);
-      }));
-    });
+    ]);
+  });
 }
 
 function databasePut(type, item) {
