@@ -1,4 +1,4 @@
-# Offline news - Service Worker [ ![Codeship Status for matthew-andrews/offline-news-service-worker](https://codeship.io/projects/39c42c40-133e-0132-6986-7e4352749945/status)](https://codeship.io/projects/33293)
+# Offline news - Service Worker [ ![Codeship Status for serviceworker/offline-news-service-worker](https://codeship.io/projects/79b6e690-1c8d-0132-6e81-2a20d8b06a7a/status)](https://codeship.io/projects/35219)
 
 https://offline-news-service-worker.herokuapp.com
 
