@@ -454,8 +454,7 @@ CacheDBProto.put = function(origin, cacheName, items) {
 
   return Promise.all(
     items.map(function(item) {
-      // item[1].body.asBlob() is the old API
-      return item[1].asBlob ? item[1].asBlob() : item[1].body.asBlob();
+      return item[1].blob();
     })
   ).then(function(responseBodies) {
     return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {

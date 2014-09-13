@@ -59,7 +59,7 @@ function openDatabase() {
 function synchronizeContent() {
   return Promise.all([
       databaseGet('stories'),
-      fetch(api).then(function(res) { return res.body.asJSON(); })
+      fetch(api).then(function(res) { return res.json(); })
     ])
     .then(function(results) {
       var promises = [];
