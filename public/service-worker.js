@@ -14,7 +14,7 @@ this.oninstall = function(e) {
 };
 
 this.onactivate = function() {
-  setInterval(synchronizeContent, 1000);
+  setInterval(synchronizeContent, 3*60*1000);
 };
 
 this.onfetch = function(e) {
