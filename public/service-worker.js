@@ -26,13 +26,13 @@ this.onfetch = function(e) {
   if (path === '/') {
     promise = databaseGet('stories')
       .then(function(stories) {
-        return new Response(new Blob([templates.list(stories)], { type : 'text/html' }), { headers: { "Content-Type": "text/html" } });
+        return new Response(templates.list(stories), { headers: { "Content-Type": "text/html" } });
       });
   } else if (guidMatches) {
     promise = databaseGetById('stories', guidMatches[1])
       .then(function(story) {
         var body = templates.article(story);
-        return new Response(new Blob([body], { type : 'text/html' }), { headers: { "Content-Type": "text/html" } });
+        return new Response(body, { headers: { "Content-Type": "text/html" } });
       });
   } else {
     promise = polyfillCaches.match(e.request);
