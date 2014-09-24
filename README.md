@@ -1,4 +1,4 @@
-# Offline news - Service Worker [ ![Codeship Status for serviceworker/offline-news-service-worker](https://codeship.io/projects/79b6e690-1c8d-0132-6e81-2a20d8b06a7a/status)](https://codeship.io/projects/35219)
+# Offline News - Service Worker [ ![Codeship Status for serviceworker/offline-news-service-worker](https://codeship.io/projects/79b6e690-1c8d-0132-6e81-2a20d8b06a7a/status)](https://codeship.io/projects/35219)
 
 https://offline-news-service-worker.herokuapp.com
 
