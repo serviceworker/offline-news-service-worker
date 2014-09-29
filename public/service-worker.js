@@ -50,10 +50,6 @@ function updateContent() {
     return cache || polyfillCaches.create('news-content-cache');
   }).then(function(cache) {
     return cache.addAll([api]);
-  }).then(function() {
-    debugger;
-  }, function() {
-    debugger;
   });
 }
 
