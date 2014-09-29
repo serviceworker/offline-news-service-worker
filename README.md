@@ -11,7 +11,7 @@ Warnings:
 
 UNIX-like computer running node (would happily accept pull requests to fix it for Windows but I don't have the means to test that here).
 
-Ironically, as this app relies on the live API of **[offline-news-api](https://github.com/matthew-andrews/offline-news-api)** the server running this application cannot run without a good connection to the internet.
+Ironically, as this app relies on the live API of **[offline-news-api](https://github.com/matthew-andrews/offline-news-api)**, the server running this application cannot run without a good connection to the internet.
 
 ### Install and run
 
