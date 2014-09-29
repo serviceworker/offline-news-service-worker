@@ -1,5 +1,5 @@
 var port = Number(process.env.PORT || 8080);
-var api = 'http' + (port === 8080 ? '://localhost:3000' : 's://offline-news-api.herokuapp.com') + '/stories';
+var api = 'https://offline-news-api.herokuapp.com/stories';
 var express = require('express');
 var path = require('path');
 var request = require('superagent');
