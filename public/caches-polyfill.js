@@ -544,6 +544,16 @@ CacheStorageProto.create = function(name) {
   });
 };
 
+CacheStorageProto.open = function(name) {
+  return this.get(name)
+    .then(function(cache) {
+      return cache || this.create(name);
+    }.bind(this))
+    .then(function(cache) {
+      return cache;
+    });
+};
+
 CacheStorageProto.delete = function(name) {
   return cacheDB.deleteCache(this._origin, name);
 };

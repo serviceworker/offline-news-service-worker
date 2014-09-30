@@ -46,17 +46,13 @@ this.onfetch = function(e) {
 };
 
 function updateContent() {
-  return polyfillCaches.get('news-content-cache').then(function(cache) {
-    return cache || polyfillCaches.create('news-content-cache');
-  }).then(function(cache) {
+  return polyfillCaches.open('news-content-cache').then(function(cache) {
     return cache.addAll([api]);
   });
 }
 
 function updateApplication() {
-  return polyfillCaches.get('news-static-cache').then(function(cache) {
-    return cache || polyfillCaches.create('news-static-cache');
-  }).then(function(cache) {
+  return polyfillCaches.open('news-static-cache').then(function(cache) {
     return cache.addAll([
     '/styles.css',
     '/templates.js',
