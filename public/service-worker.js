@@ -54,9 +54,9 @@ function updateContent() {
 function updateApplication() {
   return polyfillCaches.open('news-static-cache').then(function(cache) {
     return cache.addAll([
-    '/styles.css',
-    '/templates.js',
-    '/application.js'
+      '/styles.css',
+      '/templates.js',
+      '/application.js'
     ]);
   });
 }
