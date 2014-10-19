@@ -22,14 +22,14 @@ this.onfetch = function(e) {
   var promise;
 
   if (path === '/') {
-    promise = polyfillCaches.match(new Request(api))
+    promise = cachesPolyfill.match(new Request(api))
       .then(function(response) {
         return response.json();
       }).then(function(stories) {
         return new Response(templates.list(stories), { headers: { "Content-Type": "text/html" } });
       });
   } else if (guidMatches) {
-    promise = polyfillCaches.match(new Request(api))
+    promise = cachesPolyfill.match(new Request(api))
       .then(function(response) {
         return response.json();
       }).then(function(stories) {
@@ -40,19 +40,19 @@ this.onfetch = function(e) {
         return new Response(body, { headers: { "Content-Type": "text/html" } });
       });
   } else {
-    promise = polyfillCaches.match(e.request);
+    promise = cachesPolyfill.match(e.request);
   }
   e.respondWith(promise);
 };
 
 function updateContent() {
-  return polyfillCaches.open('news-content-cache').then(function(cache) {
+  return cachesPolyfill.open('news-content-cache').then(function(cache) {
     return cache.addAll([api]);
   });
 }
 
 function updateApplication() {
-  return polyfillCaches.open('news-static-cache').then(function(cache) {
+  return cachesPolyfill.open('news-static-cache').then(function(cache) {
     return cache.addAll([
       '/styles.css',
       '/templates.js',
