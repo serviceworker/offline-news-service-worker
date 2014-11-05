@@ -55,7 +55,6 @@ function updateApplication() {
   return cachesPolyfill.open('news-static-cache').then(function(cache) {
     return cache.addAll([
       '/styles.css',
-      '/templates.js',
       '/application.js'
     ]);
   });
