@@ -7,7 +7,7 @@
     "test": "npm run jshint && npm run lintspaces",
     "jshint": "jshint `npm run -s js-files`",
     "lintspaces": "lintspaces -n -t -d spaces -i js-comments -s 2 `npm run -s js-files`",
-    "js-files": "find . -name '*.js' ! -path './node_modules/*' ! -name 'superagent.js' ! -name 'promise.js' ! -name 'indexeddb.shim.min.js' ! -name 'cache.shim.js' ! -name 'caches-polyfill.js'",
+    "js-files": "find . -name '*.js' ! -path './node_modules/*' ! -name 'promise.js' ! -name 'indexeddb.shim.min.js' ! -name 'cache.shim.js' ! -name 'caches-polyfill.js'",
     "haikro": "haikro build deploy --app offline-news-service-worker --commit `git rev-parse HEAD` --token ${HEROKU_AUTH_TOKEN}"
   },
   "repository": {
@@ -22,9 +22,10 @@
   "homepage": "https://github.com/matthew-andrews/offline-news",
   "private": true,
   "dependencies": {
+    "es6-promise": "^2.0.0",
     "express": "^4.8.7",
     "haikro": "^1.3.0",
-    "superagent": "^0.18.2"
+    "isomorphic-fetch": "^1.0.0"
   },
   "devDependencies": {
     "jshint": "^2.5.5",
