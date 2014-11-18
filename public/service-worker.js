@@ -26,7 +26,7 @@ this.onfetch = function(e) {
       .then(function(response) {
         return response.json();
       }).then(function(stories) {
-        return new Response(templates.list(stories), { headers: { "Content-Type": "text/html" } });
+        return new Response(templates.list(stories), { headers: { "Content-Type": "text/html; charset=utf-8" } });
       });
   } else if (guidMatches) {
     promise = cachesPolyfill.match(new Request(api))
@@ -37,7 +37,7 @@ this.onfetch = function(e) {
           return guidMatches[1] === story.guid;
         });
         var body = templates.article(story[0]);
-        return new Response(body, { headers: { "Content-Type": "text/html" } });
+        return new Response(body, { headers: { "Content-Type": "text/html; charset=utf-8" } });
       });
   } else {
     promise = cachesPolyfill.match(e.request);
