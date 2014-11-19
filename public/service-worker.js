@@ -47,7 +47,7 @@ this.onfetch = function(e) {
 
 function updateContent() {
   return cachesPolyfill.open('news-content-cache').then(function(cache) {
-    return cache.addAll([api]);
+    return cache.add(api);
   });
 }
 
