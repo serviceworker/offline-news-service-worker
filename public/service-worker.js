@@ -7,7 +7,7 @@ var templates = this.templates;
 this.oninstall = function(e) {
   e.waitUntil(Promise.all([
     updateContent(), updateApplication()
-  ]).catch(function(err){ console.log(err); }));
+  ]));
 };
 
 this.onactivate = function() {
