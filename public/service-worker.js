@@ -1,5 +1,4 @@
 importScripts('./templates.js');
-importScripts('./caches-polyfill.js');
 
 var api = 'https://offline-news-api.herokuapp.com/stories';
 var db;
@@ -8,7 +7,7 @@ var templates = this.templates;
 this.oninstall = function(e) {
   e.waitUntil(Promise.all([
     updateContent(), updateApplication()
-  ]));
+  ]).catch(function(err){ console.log(err); }));
 };
 
 this.onactivate = function() {
@@ -22,14 +21,14 @@ this.onfetch = function(e) {
   var promise;
 
   if (path === '/') {
-    promise = cachesPolyfill.match(new Request(api))
+    promise = caches.match(new Request(api))
       .then(function(response) {
         return response.json();
       }).then(function(stories) {
         return new Response(templates.list(stories), { headers: { "Content-Type": "text/html; charset=utf-8" } });
       });
   } else if (guidMatches) {
-    promise = cachesPolyfill.match(new Request(api))
+    promise = caches.match(new Request(api))
       .then(function(response) {
         return response.json();
       }).then(function(stories) {
@@ -40,22 +39,30 @@ this.onfetch = function(e) {
         return new Response(body, { headers: { "Content-Type": "text/html; charset=utf-8" } });
       });
   } else {
-    promise = cachesPolyfill.match(e.request);
+    promise = caches.match(e.request);
   }
   e.respondWith(promise);
 };
 
 function updateContent() {
-  return cachesPolyfill.open('news-content-cache').then(function(cache) {
-    return cache.add(api);
+  return caches.open('news-content-cache').then(function(cache) {
+    return fetch(api)
+      .then(function(response) {
+        return cache.put(api, response);
+      });
   });
 }
 
 function updateApplication() {
-  return cachesPolyfill.open('news-static-cache').then(function(cache) {
-    return cache.addAll([
-      '/styles.css',
-      '/application.js'
+  return Promise.all([
+    fetch('/styles.css'),
+    fetch('/application.js'),
+    caches.open('news-static-cache')
+  ]).then(function(responses) {
+    var cache = responses[2];
+    return Promise.all([
+      cache.put('/styles.css', responses[0]),
+      cache.put('/application.js', responses[1])
     ]);
   });
 }

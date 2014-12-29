@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "clean": "git clean -fxd",
+    "start": "node index.js",
     "test": "npm run jshint && npm run lintspaces",
     "jshint": "jshint `npm run -s js-files`",
     "lintspaces": "lintspaces -n -t -d spaces -i js-comments -s 2 `npm run -s js-files`",
@@ -25,7 +27,7 @@
     "es6-promise": "^2.0.0",
     "express": "^4.8.7",
     "haikro": "^1.5.2",
-    "isomorphic-fetch": "^1.0.0"
+    "isomorphic-fetch": "git://github.com/matthew-andrews/isomorphic-fetch#self"
   },
   "devDependencies": {
     "jshint": "^2.5.5",
