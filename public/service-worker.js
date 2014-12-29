@@ -44,10 +44,20 @@ this.onfetch = function(e) {
   e.respondWith(promise);
 };
 
+function isValidStatus(status) {
+  if (status >= 400 && status < 600) {
+    return false;
+  }
+  return true;
+}
+
 function updateContent() {
   return caches.open('news-content-cache').then(function(cache) {
     return fetch(api)
       .then(function(response) {
+        if (!isValidStatus(response.status)) {
+          throw new Error("The Server returned a bad response");
+        }
         return cache.put(api, response);
       });
   });
@@ -59,6 +69,9 @@ function updateApplication() {
     fetch('/application.js'),
     caches.open('news-static-cache')
   ]).then(function(responses) {
+    if (!isValidStatus(responses[0].status) || !isValidStatus(responses[1].status)) {
+      throw new Error("The Server returned a bad response");
+    }
     var cache = responses[2];
     return Promise.all([
       cache.put('/styles.css', responses[0]),
