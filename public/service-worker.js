@@ -41,6 +41,10 @@ this.onfetch = function(e) {
   } else {
     promise = caches.match(e.request);
   }
+  promise
+    .catch(function(err) {
+      return fetch(e.request.url);
+    });
   e.respondWith(promise);
 };
 
