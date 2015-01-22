@@ -1,5 +1,29 @@
 importScripts('./templates.js');
 
+// Start polyfill hack
+if (!CacheStorage.prototype.match) {
+  // This is probably vulnerable to race conditions (removing caches etc)
+  CacheStorage.prototype.match = function match(request, opts) {
+    var caches = this;
+
+    return this.keys().then(function(cacheNames) {
+      var match;
+
+      return cacheNames.reduce(function(chain, cacheName) {
+        return chain.then(function() {
+          return match || caches.open(cacheName).then(function(cache) {
+            return cache.match(request, opts);
+          }).then(function(response) {
+            match = response;
+            return match;
+          });
+        });
+      }, Promise.resolve());
+    });
+  };
+}
+// End polyfill hack
+
 var api = 'https://offline-news-api.herokuapp.com/stories';
 var db;
 var templates = this.templates;
@@ -71,15 +95,17 @@ function updateApplication() {
   return Promise.all([
     fetch('/styles.css'),
     fetch('/application.js'),
+    fetch('/templates.js'),
     caches.open('news-static-cache')
   ]).then(function(responses) {
-    if (!isValidStatus(responses[0].status) || !isValidStatus(responses[1].status)) {
+    if (!isValidStatus(responses[0].status) || !isValidStatus(responses[1].status) || !isValidStatus(responses[2].status)) {
       throw new Error("The Server returned a bad response");
     }
-    var cache = responses[2];
+    var cache = responses[3];
     return Promise.all([
       cache.put('/styles.css', responses[0]),
-      cache.put('/application.js', responses[1])
+      cache.put('/application.js', responses[1]),
+      cache.put('/templates.js', responses[2])
     ]);
   });
 }
